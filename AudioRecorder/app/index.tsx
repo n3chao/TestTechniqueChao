@@ -31,7 +31,7 @@ export default function Index() {
     
   }
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item}) => (
     <View style={styles.recordingListed}>
       <Text 
       style={[styles.recordingListedText]}>
