@@ -56,11 +56,15 @@ export default function Index() {
       return (
         <View key={index} style={styles.recordingListed}>
           <Text style={styles.fill}>
-            Recording #{index + 1} at {date} {time} 
+            Recording #{index + 1} at {date} {time}
           </Text>
           <Text> {recordingLine.duration} </Text>
-          <Button onPress={() => recordingLine.sound.replayAsync()} title="Play"></Button>
-          <Button onPress={() => recordingLine.sound.pauseAsync()} title="Pause"></Button>
+          <Pressable onPress={() => recordingLine.sound.replayAsync()}>
+            <FontAwesome name="play" size={24} color="black" />
+          </Pressable>
+          <Pressable onPress={() => recordingLine.sound.pauseAsync()}>
+          F<FontAwesome name="pause" size={24} color="black" />
+          </Pressable>
         </View>
       );
     });
