@@ -12,6 +12,8 @@ export default function Index() {
   const [recording, setRecording] = useState();
   //const [recordings, setRecordings] = useState<any[]>([]);
   const [recordingList, setRecordingList] = useState<any[]>(audioFiles.sort((a, b) => b.id - a.id));
+  const date = new Date().toLocaleDateString();
+  const time = new Date().toLocaleTimeString();
 
   async function startRecording() {
     try {
@@ -49,14 +51,14 @@ export default function Index() {
     return seconds < 10 ? `${Math.floor(minutes)}:0${seconds}` : `${Math.floor(minutes)}:${seconds}`
 
   }
-
   async function getRecordingLines() {
     return recordingList.map((recordingLine, index) => {
       return (
         <View key={index} style={styles.recordingListed}>
           <Text style={styles.fill}>
-            Recording #{index + 1} | {recordingLine.duration}
+            Recording #{index + 1} at {date} {time} 
           </Text>
+          <Text> {recordingLine.duration} </Text>
           <Button onPress={() => recordingLine.sound.replayAsync()} title="Play"></Button>
           <Button onPress={() => recordingLine.sound.pauseAsync()} title="Pause"></Button>
         </View>
