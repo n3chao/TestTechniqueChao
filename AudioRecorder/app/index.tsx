@@ -8,10 +8,21 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 import { audioFiles } from "@/data/audioFiles"
 
+//Define types
+interface RecordingItem {
+  id: number;
+  title: string;
+  date: string;
+  time: string;
+  sound: Audio.Sound | null;
+  duration: string;
+  file: string;
+}
+
 export default function Index() {
-  const [recording, setRecording] = useState();
+  const [recording, setRecording] = useState<Audio.Recording | undefined>(undefined);
   //const [recordings, setRecordings] = useState<any[]>([]);
-  const [recordingList, setRecordingList] = useState<any[]>(audioFiles.sort((a, b) => b.id - a.id));
+  const [recordingList, setRecordingList] = useState<RecordingItem[]>(audioFiles.sort((a, b) => b.id - a.id));
   const date = new Date().toLocaleDateString();
   const time = new Date().toLocaleTimeString();
 
@@ -23,6 +34,7 @@ export default function Index() {
           allowsRecordingIOS: true,
           playsInSilentModeIOS: true
         });
+
         const { recording } = await Audio.Recording.createAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
         setRecording(recording);
       }
@@ -31,18 +43,23 @@ export default function Index() {
   }
 
   async function stopRecording() {
-    setRecording(undefined);
+    if (recording) {
+      await recording.stopAndUnloadAsync();
+      //let allRecordings = [...recordingList];
+      const { sound, status } = await recording.createNewLoadedSoundAsync();
 
-    await recording.stopAndUnloadAsync();
-    let allRecordings = [...recordingList];
-    const { sound, status } = await recording.createNewLoadedSoundAsync();
-    allRecordings.push({
-      sound: sound,
-      duration: getDurationFormatted(status.durationMillis),
-      file: recording.getURI()
-    });
-
-    setRecordingList(allRecordings);
+      const newRecording: RecordingItem = {
+        id: Date.now(),
+        title: `Recording ${Date.now()}`,
+        date: new Date().toLocaleDateString(),
+        time: new Date().toLocaleTimeString(),
+        sound: sound,
+        duration: getDurationFormatted(status.durationMillis),
+        file: recording.getURI() || "",
+      }
+      setRecordingList(prevList => [newRecording, ...prevList]);
+      setRecording(undefined);
+    }
   }
 
   async function getDurationFormatted(milliseconds: number) {
@@ -51,19 +68,19 @@ export default function Index() {
     return seconds < 10 ? `${Math.floor(minutes)}:0${seconds}` : `${Math.floor(minutes)}:${seconds}`
 
   }
-  async function getRecordingLines() {
+  function getRecordingLines() {
     return recordingList.map((recordingLine, index) => {
       return (
         <View key={index} style={styles.recordingListed}>
           <Text style={styles.fill}>
-            Recording #{index + 1} at {date} {time}
+            Recording at {recordingLine.date} {recordingLine.time}
           </Text>
           <Text> {recordingLine.duration} </Text>
-          <Pressable onPress={() => recordingLine.sound.replayAsync()}>
+          <Pressable onPress={() => recordingLine.sound?.replayAsync()}>
             <FontAwesome name="play" size={24} color="black" />
           </Pressable>
-          <Pressable onPress={() => recordingLine.sound.pauseAsync()}>
-          F<FontAwesome name="pause" size={24} color="black" />
+          <Pressable onPress={() => recordingLine.sound?.pauseAsync()}>
+            F<FontAwesome name="pause" size={24} color="black" />
           </Pressable>
         </View>
       );
@@ -74,15 +91,6 @@ export default function Index() {
     setRecordingList([])
   }
 
-  const addRecording = () => {
-    const newId = audioFiles.length > 0 ? audioFiles[0].id + 1 : 1;
-    setRecordingList([{ id: newId, title: "NEWTESTAUDIO" }, ...audioFiles])
-  }
-
-  const removeRecording = (id: number) => {
-    setRecordingList(audioFiles.filter(audioFile => audioFile.id !== id))
-  }
-
   const playRecording = () => {
 
   }
@@ -90,21 +98,6 @@ export default function Index() {
   const pauseRecording = () => {
 
   }
-
-  const renderItem = ({ item }) => (
-    <View style={styles.recordingListed}>
-      <Text
-        style={[styles.recordingListedText]}>
-        {item.title}
-      </Text>
-      <Pressable onPress={() => playRecording(item.id)}>
-        <Entypo name="controller-play" size={28} color="black" />
-      </Pressable>
-      <Pressable onPress={() => pauseRecording(item.id)}>
-        <FontAwesome name="pause" size={20} color="black" />
-      </Pressable>
-    </View>
-  )
 
   return (
     <SafeAreaView style={styles.container}>
@@ -121,7 +114,9 @@ export default function Index() {
             onPress={recording ? stopRecording : startRecording} />
         </Pressable>
         {getRecordingLines()}
-        <Button title={recordingList.length > 0 ? '\n\n\nClear Recordings' : ''} onPress={clearRecordings} />
+        {recordingList.length > 0 && (
+          <Button title={recordingList.length > 0 ? '\n\n\nClear Recordings' : ''} onPress={clearRecordings} />
+          )}
         <Pressable>
 
         </Pressable>
