@@ -1,19 +1,19 @@
 export const audioFiles = [
     {
         "id": 1,
-        "audioName": "aaa"
+        "title": "aaa"
     },
     {
         "id": 2,
-        "audioName": "bbb"
+        "title": "bbb"
     },
     {
         "id": 3,
-        "audioName": "ccc"
+        "title": "ccc"
     },
     {
         "id": 4,
-        "audioName": "ddd"
+        "title": "ddd"
     },
     
 ]
